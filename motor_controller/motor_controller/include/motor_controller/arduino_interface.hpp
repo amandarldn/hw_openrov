@@ -17,6 +17,7 @@
 #include <string>
 #include <memory>
 #include <termios.h>
+#include <std_msgs/msg/float32.hpp>
 
 
 namespace arduino_controller
@@ -53,6 +54,7 @@ private:
   int WriteToSerial(const unsigned char* buf, int nBytes);
   int ReadSerial(unsigned char* buf, int nBytes);
   
+  rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr publisher_;
 
 
 };
