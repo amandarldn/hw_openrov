@@ -1,114 +1,34 @@
-#define rpm1 9   // Motor1 PWM pin
-#define fwd1 8   // Motor1 forward direction pin
-#define rev1 7   // Motor1 reverse direction pin
-#define rpm2 10  // Motor2 PWM pin
-#define fwd2 12   // Motor2 forward direction pin
-#define rev2 13   // Motor2 reverse direction pin
+#include <Servo.h>
 
-float rpmValue1 = 0, rpmValue2 = 0;
-float rpmValue1_f,rpmValue2_f;
-int dirValue1 = 0, dirValue2 = 0;
-float feedbackCurrent1 = 0, feedbackCurrent2 = 0;
+Servo esc;
+const int escPin = 9;
+String inputString = "";
 
 void setup() {
-  // Set pin modes for motor control
-  pinMode(rpm1, OUTPUT);
-  pinMode(fwd1, OUTPUT);
-  pinMode(rev1, OUTPUT);
-  pinMode(rpm2, OUTPUT);
-  pinMode(fwd2, OUTPUT);
-  pinMode(rev2, OUTPUT);
-
-  // Set initial motor state
-  digitalWrite(fwd1, LOW);
-  digitalWrite(rev1, LOW);
-  analogWrite(rpm1, 0);
-
-  digitalWrite(fwd2, LOW);
-  digitalWrite(rev2, LOW);
-  analogWrite(rpm2, 0);
-
-  // Initialize serial communication
   Serial.begin(115200);
+  esc.attach(escPin);
+
+  // Arma o ESC (espera sinal baixo por 3s)
+  Serial.println("Arming ESC...");
+  esc.writeMicroseconds(1000);
+  delay(3000);
+  Serial.println("ESC armed.");
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    // Read incoming data until newline
-    String input = Serial.readStringUntil('\n');
-    input.trim();
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
+    if (inChar == '\n') {
+      int pwmValue = inputString.toInt();
+      pwmValue = constrain(pwmValue, 1000, 2000);
+      esc.writeMicroseconds(pwmValue);
 
-    if (input.length() > 0) {
-      // Parse the incoming data
-      int firstSpace = input.indexOf(' ');
-      int secondSpace = input.indexOf(' ', firstSpace + 1);
-      int thirdSpace = input.indexOf(' ', secondSpace + 1);
+      Serial.print("PWM recebido: ");
+      Serial.println(pwmValue);
 
-      if (firstSpace != -1 && secondSpace != -1 && thirdSpace != -1) {
-        rpmValue1 = input.substring(0, firstSpace).toFloat();
-        rpmValue1_f = (rpmValue1);
-        dirValue1 = input.substring(firstSpace + 1, secondSpace).toInt();
-        rpmValue2 = input.substring(secondSpace + 1, thirdSpace).toFloat();
-        rpmValue2_f = (rpmValue2);
-        dirValue2 = input.substring(thirdSpace + 1).toInt();
-
-        // Control Motor 1
-        analogWrite(rpm1, rpmValue1_f);
-        if (dirValue1 == 0) {
-          digitalWrite(fwd1, HIGH);
-          digitalWrite(rev1, LOW);
-        } else {
-          digitalWrite(fwd1, LOW);
-          digitalWrite(rev1, HIGH);
-        }
-
-        // Control Motor 2
-        analogWrite(rpm2, rpmValue2_f);
-        if (dirValue2 == 0) {
-          digitalWrite(fwd2, LOW);
-          digitalWrite(rev2, HIGH);
-        } else {
-          digitalWrite(fwd2, HIGH);
-          digitalWrite(rev2, LOW);
-        }
-
-
-
- 
-        if (rpmValue1 == 0 && rpmValue2 == 0) {
-          // Set all digital pins to LOW if both RPM values are zero
-          digitalWrite(fwd1, LOW);
-          digitalWrite(rev1, LOW);
-          digitalWrite(fwd2, LOW);
-          digitalWrite(rev2, LOW);
-          analogWrite(rpm1, 0);
-          analogWrite(rpm2, 0);
-        }
-
-//        // Read current feedback from sensors (analog pins A0, A1)
-//        feedbackCurrent1 = analogRead(A0)* 0.0196 * 0.5;
-//        feedbackCurrent2 = analogRead(A1); //* 0.0196 * 0.5;
-
-        Serial.print("Motor1 RPM: ");
-        Serial.print(rpmValue1);
-        Serial.print(", Direction: ");
-        Serial.println(dirValue1);
-
-        Serial.print("Motor2 RPM: ");
-        Serial.print(rpmValue2);
-        Serial.print(", Direction: ");
-        Serial.println(dirValue2);
-
-//        Serial.print("Motor1 Feedback Current: ");
-//        Serial.println(feedbackCurrent1);
-//
-//        Serial.print("Motor2 Feedback Current: ");
-//        Serial.println(feedbackCurrent2);
-
-        // Send current feedback back to the ROS2 node using Serial.write
-//        Serial.write((byte *)&feedbackCurrent1, sizeof(feedbackCurrent1));
-//        Serial.write((byte *)&feedbackCurrent2, sizeof(feedbackCurrent2));
-      }
+      inputString = ""; // Limpa o buffer
+    } else {
+      inputString += inChar;
     }
   }
 }
