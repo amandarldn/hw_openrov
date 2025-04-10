@@ -248,21 +248,26 @@ int ArduinoInterface::ReadSerial(unsigned char* buf, int nBytes)
 // This function is responsible for writing commands to the Arduino
 hardware_interface::return_type ArduinoInterface::write(const rclcpp::Time &, const rclcpp::Duration &) {
   try {
-    
+    // Clamp PWM values to 1000-2000µs (valid range for ESCs)
+    int pwm1 = static_cast<int>(velocity_commands_[0]);
+    int pwm2 = static_cast<int>(velocity_commands_[1]);
 
-    int pwm = static_cast<int>(velocity_commands_[0]);
-    pwm = std::clamp(pwm, 1500, 2000);  // Garante que está no intervalo válido pro ESC
+    pwm1 = std::clamp(pwm1, 1000, 2000);
+    pwm2 = std::clamp(pwm2, 1000, 2000);
 
-    std::string data = std::to_string(pwm) + "\n";
+    // Format: "PWM1 PWM2\n" (e.g., "1500 1600\n")
+    std::string data = std::to_string(pwm1) + " " + std::to_string(pwm2) + "\n";
 
-    WriteToSerial(reinterpret_cast<const unsigned char *>(data.c_str()), data.length());
+    // Send to Arduino
+    WriteToSerial(reinterpret_cast<const unsigned char*>(data.c_str()), data.length());
 
-    RCLCPP_INFO(rclcpp::get_logger("arduino_actuator_interface"), "PWM enviado: %d", pwm);
+    RCLCPP_INFO(rclcpp::get_logger("arduino_actuator_interface"), 
+                "PWM1: %d, PWM2: %d", pwm1, pwm2);
   } catch (const std::exception &e) {
-    RCLCPP_FATAL(rclcpp::get_logger("arduino_actuator_interface"), "Erro no write: %s", e.what());
+    RCLCPP_FATAL(rclcpp::get_logger("arduino_actuator_interface"), 
+                 "Erro no write: %s", e.what());
     return hardware_interface::return_type::ERROR;
   }
-
   return hardware_interface::return_type::OK;
 }
 

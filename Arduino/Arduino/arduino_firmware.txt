@@ -1,34 +1,51 @@
 #include <Servo.h>
 
-Servo esc;
-const int escPin = 9;
+Servo esc1, esc2, esc3;
+const int escPin1 = 9;  // Thruster 1
+const int escPin2 = 10; // Thruster 2
+const int escPin3 = 11; // Thruster 3
 String inputString = "";
 
 void setup() {
   Serial.begin(115200);
-  esc.attach(escPin);
+  esc1.attach(escPin1);
+  esc2.attach(escPin2);
+  esc3.attach(escPin3);
 
-  // Arma o ESC (espera sinal baixo por 3s)
-  Serial.println("Arming ESC...");
-  esc.writeMicroseconds(1000);
+  Serial.println("Arming ESCs...");
+  esc1.writeMicroseconds(1000);
+  esc2.writeMicroseconds(1000);
+  esc3:writeMicroseconds(1000);
   delay(3000);
-  Serial.println("ESC armed.");
+  Serial.println("ESCs armed.");
 }
 
 void loop() {
   while (Serial.available()) {
     char inChar = (char)Serial.read();
     if (inChar == '\n') {
-      int pwmValue = inputString.toInt();
-      pwmValue = constrain(pwmValue, 1000, 2000);
-      esc.writeMicroseconds(pwmValue);
 
-      Serial.print("PWM recebido: ");
-      Serial.println(pwmValue);
+      int spaceIndex = inputString.indexOf(' ');
+      if (spaceIndex != -1) {
+        int pwm1 = inputString.substring(0, spaceIndex).toInt();
+        int pwm2 = inputString.substring(spaceIndex + 1).toInt();
+        int pwm3 = inputString.substring(spaceIndex + 1).toInt();
 
-      inputString = ""; // Limpa o buffer
+        pwm1 = constrain(pwm1, 1000, 2000);
+        pwm2 = constrain(pwm2, 1000, 2000);
+        pwm3 = constrain(pwm3, 1000, 2000);
+
+        esc1.writeMicroseconds(pwm1);
+        esc2.writeMicroseconds(pwm2);
+        esc3.writeMicroseconds(pwm3);
+
+        Serial.print("PWM1: "); Serial.print(pwm1);
+        Serial.print(", PWM2: "); Serial.println(pwm2);
+        Serial.print(", PWM3: "); Serial.println(pwm3);
+      }
+      inputString = ""; // Clear buffer
     } else {
-      inputString += inChar;
+      inputString += inChar; // Build the string
     }
   }
 }
