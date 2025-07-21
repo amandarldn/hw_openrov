@@ -17,6 +17,7 @@ add_library(${PROJECT_NAME} SHARED
   src/arduino_interface.cpp
 )
 
+add_executable(twist_to_pwm src/twist_to_pwm.cpp)
 
 target_include_directories(
   ${PROJECT_NAME}
@@ -30,6 +31,12 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_lifecycle
 )
 
+ament_target_dependencies(twist_to_pwm
+  rclcpp
+  geometry_msgs
+  std_msgs
+)
+
 pluginlib_export_plugin_description_file(hardware_interface motor_controller.xml)
 
 install(
@@ -40,6 +47,12 @@ install(
 install(
   TARGETS ${PROJECT_NAME}
   DESTINATION lib
+)
+
+install(
+  TARGETS
+  twist_to_pwm
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(

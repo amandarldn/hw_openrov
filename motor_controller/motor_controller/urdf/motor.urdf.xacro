@@ -81,7 +81,22 @@
         </visual>
 
     </link>
+    <link name="rotor3">
+        <collision>
+            <origin xyz="0 0 -0.05" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.3" length="0.5" />
+            </geometry>
+        </collision>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.3" length="0.5" />
+            </geometry>
+            <material name="red" />
+        </visual>
 
+    </link>
     <!-- Define joint named "joint1" with type "fixed" -->
     <joint name="joint1" type="fixed">
         <parent link="world" />
@@ -106,7 +121,12 @@
         <axis xyz="0 0 1" />
     </joint>
 
-
+    <joint name="joint4" type="continuous">
+        <parent link="base" />
+        <child link="rotor3" />
+        <origin xyz="-0.65 0 0.25" rpy="-0.5236 0 0" />
+        <axis xyz="0 0 1" />
+    </joint>
   <ros2_control name="arduino_actuator_ros2_control" type="system">
     <hardware>
       <plugin>arduino_controller/ArduinoInterface</plugin>
@@ -129,7 +149,12 @@
         <state_interface name="position"/>
     </joint>
 
-
+    <joint name="joint4">
+        <command_interface name="velocity">
+        </command_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+    </joint>
   </ros2_control>
 
 

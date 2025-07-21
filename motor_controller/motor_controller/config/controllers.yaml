@@ -15,7 +15,7 @@ motor_controller:
     joints:
       - joint2
       - joint3
-     
+      - joint4
 
     command_interfaces:
       - velocity

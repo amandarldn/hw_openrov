@@ -1,0 +1,17 @@
+joy_node:
+  ros__parameters:
+    device_id: 0
+    deadzone: 0.05
+    autorepeat_rate: 20.0
+
+teleop_twist_joy:
+  ros__parameters:
+    axis_linear:
+      x: 1    # Eixo para movimento frontal/traseiro
+    axis_angular:
+      yaw: 0  # Eixo para rotação
+    scale_linear:
+      x: 1.0  # Sensibilidade movimento linear
+    scale_angular:
+      yaw: 1.0 # Sensibilidade rotação
+    enable_button: 4  # Botão para habilitar controle (L1 por exemplo)
